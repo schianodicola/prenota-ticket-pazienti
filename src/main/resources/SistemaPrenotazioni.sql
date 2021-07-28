@@ -1,0 +1,12 @@
+
+CREATE TABLE IF NOT EXISTS PAZIENTE(
+	ID_PAZIENTE sequence,
+	NOME varchar(30),
+	COGNOME varchar(30),
+	DATA_NASCITA TIMESTAMP,
+	INDIRIZZO varchar(30),
+	CF varchar(16) unique,
+	
+	PRIMARY KEY(ID_PAZIENTE)
+
+);

@@ -1,0 +1,45 @@
+spring:
+
+  application:
+
+    name: prenota-ticket-pazienti
+
+  jmx:
+
+    default-domain: prenota-ticket-pazienti
+
+  jpa:
+
+    database: POSTGRESQL
+
+    show-sql: true
+
+    properties:
+
+      hibernate:
+
+        default_schema: public
+
+        jdbc:
+
+          lob:
+
+            non_contextual_creation: true
+
+  datasource:
+
+    platform: postgres
+
+    url: jdbc:postgresql://localhost:5432/postgres
+
+    username: postgres
+
+    password: root
+
+    driverClassName: org.postgresql.Driver
+
+    hikari:
+
+      maximumPoolSize: 5
+
+      minimumIdle: 1
