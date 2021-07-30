@@ -1,6 +1,8 @@
 package it.prenota.ticket.controller;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -17,9 +19,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import it.prenota.ticket.model.dto.EsitoDTO;
 import it.prenota.ticket.model.dto.PazienteDTO;
 import it.prenota.ticket.model.entity.Paziente;
 import it.prenota.ticket.model.mapper.PazienteMapper;
+import it.prenota.ticket.model.response.PazienteResponse;
+import it.prenota.ticket.model.util.EsitoUtility;
+import it.prenota.ticket.model.util.ListUtility;
+import it.prenota.ticket.model.util.StringUtility;
 import it.prenota.ticket.service.PazienteService;
 import javassist.bytecode.stackmap.TypeData.ClassName;
 
@@ -39,35 +46,53 @@ public class PazienteController {
 		Set<PazienteDTO> lpazienti= new HashSet<>();
 		
 		lpazienti= sPaziente.getAll();
-		if(lpazienti.isEmpty()) return new ResponseEntity<>("[getPazienti] Non ho trovato pazienti", HttpStatus.OK);
-		else return new ResponseEntity<>(lpazienti, HttpStatus.OK);
+		PazienteResponse pr= new PazienteResponse(); 
+		pr.setEsitoDTO(EsitoUtility.setEsitoOk());
+		if(lpazienti.isEmpty()) { 
+			return new ResponseEntity<>(pr, HttpStatus.OK);
+		}else {
+			
+			//List<PazienteDTO> lista= new ArrayList<>(lpazienti); //TODO prova a togliere i warning
+			List<PazienteDTO> lista= List.copyOf(lpazienti);
+			pr.setPazientiDTO(lista);
+			return new ResponseEntity<>(pr, HttpStatus.OK);
+		}
 	
 	}
 	
 	@RequestMapping(path = "/inserisci", method = RequestMethod.POST)
 	public ResponseEntity<?> inserire( @RequestBody final PazienteDTO paziente ) {
 		
-		if(paziente==null) return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+		PazienteResponse pr= new PazienteResponse(); 
+		pr.setEsitoDTO(EsitoUtility.setEsitoOk());
 		
-		LOGGER.info( "[RequestInserire_ID: ]"+ paziente.getId_paziente() );
+		//class string utility
+		if(paziente==null || StringUtility.isEmpty(paziente.getCf()) ) {
+			pr.setEsitoDTO(EsitoUtility.setEsitoBad());
+			return new ResponseEntity<>(pr, HttpStatus.BAD_REQUEST);
+		}
+		//if(paziente==null || paziente.getCf()==null || paziente.getCf().equals("") ) return new ResponseEntity<>("non hai inserito i dati del paziente", HttpStatus.BAD_REQUEST);
 		
 		//Controllo se il CF e' già presente, per vedere se salvarlo o meno
-		if(sPaziente.findByCf( paziente.getCf() ) != null) return new ResponseEntity<>("Paziente gia' esistente", HttpStatus.OK);
-		/*
-			//salvo il paziente
-			if(sPaziente.inserisci(paziente) != null) return new ResponseEntity<>("Paziente Salvato!", HttpStatus.NO_CONTENT);
-			else return new ResponseEntity<>("Paziente non inserito", HttpStatus.OK); 
-		*/
-		//non mi piace
+		if(sPaziente.findByCf( paziente.getCf() ) != null) {
+			return new ResponseEntity<>("Paziente gia' esistente", HttpStatus.OK); //TODO ricontrollare
+		}
+		
+		
+		//TODO da rivedere
 		try {
 			sPaziente.inserisci(paziente);
-		}catch(IllegalArgumentException e) {
+			List<PazienteDTO> lista= new ArrayList<>();
+			lista.add(paziente);
+			pr.setPazientiDTO(lista);
+		}catch(Exception e) {
 			System.err.println("[Errore] Impossibile inserire il paziente (paziente null)");
-			return new ResponseEntity<>("Paziente non inserito", HttpStatus.OK); 
+			pr.setEsitoDTO(EsitoUtility.setEsitoOkButError());
+			return new ResponseEntity<>(pr, HttpStatus.OK); 
 		}
-		//finally {
-		return new ResponseEntity<>("Paziente Salvato!", HttpStatus.NO_CONTENT);
-		//}
+		
+		return new ResponseEntity<>(pr, HttpStatus.OK);
+		
 		
 	}
 	
@@ -75,28 +100,63 @@ public class PazienteController {
 	@RequestMapping(path = "/aggiorna", method = RequestMethod.PUT)
 	public ResponseEntity<?> aggiornare( @RequestBody final PazienteDTO paziente ) {
 		
-		if(paziente==null || paziente.getCf()==null) return new ResponseEntity<>("[ERRORE] Hai lascito Uno o più campi vuoti. MORE INFO: " + paziente.toString(), HttpStatus.BAD_REQUEST);
+		PazienteResponse pr= new PazienteResponse();
+		if(paziente==null || StringUtility.isEmpty(paziente.getCf()) ) {
+			pr.setEsitoDTO(EsitoUtility.setEsitoBad());
+			pr.setPazientiDTO(ListUtility.PazienteToList(paziente)); //nella casistica di errore , non c'è bisogno
+			return new ResponseEntity<>(pr , HttpStatus.BAD_REQUEST);
+		}
 		PazienteDTO p=sPaziente.findByCf(paziente.getCf());
 		
-		if(p == null) return new ResponseEntity<>("Il Paziente che vuoi modificare non presente nel db", HttpStatus.OK);
+		if(p == null) {
+			return new ResponseEntity<>("Il Paziente che vuoi modificare non presente nel db", HttpStatus.OK);
+		}
 		
+		
+		pr.setEsitoDTO(EsitoUtility.setEsitoOk());
 		//aggiorno Paziente
 		paziente.setId_paziente(p.getId_paziente());
-		if(sPaziente.aggiorna(paziente) == null) return new ResponseEntity<>("errore modifica", HttpStatus.NOT_FOUND);
-		else return new ResponseEntity<>("Dati Paziente modificati", HttpStatus.OK);
+		if(sPaziente.aggiorna(paziente) == null) {
+			return new ResponseEntity<>("errore modifica", HttpStatus.NOT_FOUND);
+		}
+		else {
+			//pr.getPazientiDTO().add(p); 
+			List<PazienteDTO> lista= new ArrayList<>();
+			lista.add(paziente);
+			pr.setPazientiDTO(lista);
+			return new ResponseEntity<>(pr, HttpStatus.OK);
+		}
 		
 	}
 	
-	//cancella l'articolo tramite un id
+	//cancella l'articolo tramite CF
 	@RequestMapping(path = "/elimina/{cf}", method = RequestMethod.DELETE)
 	public ResponseEntity<?> eliminare( @PathVariable String cf ) {
-				
+			
+		PazienteResponse pr= new PazienteResponse(); 
+		
+		if(cf==null || StringUtility.isEmpty(cf) ) {
+			pr.setEsitoDTO(EsitoUtility.setEsitoBad());
+			return new ResponseEntity<>(pr, HttpStatus.BAD_REQUEST);
+		}
 		//controllo se il paziente è presente
-		if(sPaziente.findByCf(cf) == null) return new ResponseEntity<>("paziente non presente", HttpStatus.OK);
+		PazienteDTO p= sPaziente.findByCf(cf); //Sei sicuro che restituisca null se non è presente un paziente?
+		if(p == null) {
+			return new ResponseEntity<>("paziente non presente", HttpStatus.OK); 
+		}
 					
-		//TODO esito			
-		if(sPaziente.elimina(cf) == true) return new ResponseEntity<>("paziente eliminato", HttpStatus.NO_CONTENT);
-		else return new ResponseEntity<>("errore query " , HttpStatus.NOT_FOUND);
+			
+		pr.setEsitoDTO(EsitoUtility.setEsitoOk());
+		if(sPaziente.elimina(cf) == true) {
+			//pr.getPazientiDTO().add(p); // solo in caso di esito negativo, o anche positivo?
+			List<PazienteDTO> lista= new ArrayList<>();
+			lista.add(p);
+			pr.setPazientiDTO(lista);
+			return new ResponseEntity<>(pr, HttpStatus.OK);
+		}else {
+			//pr.setEsitoDTO(EsitoUtility.setEsitoOkButError()); Corretto, ma è un uso improprio dell'utility?
+			return new ResponseEntity<>(pr , HttpStatus.NOT_FOUND);//cambia
+		}
 				
 	}
 	

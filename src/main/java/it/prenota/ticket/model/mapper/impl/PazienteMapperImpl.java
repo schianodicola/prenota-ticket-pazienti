@@ -34,7 +34,9 @@ public class PazienteMapperImpl implements PazienteMapper{
 
 	@Override
 	public PazienteDTO toDto(Paziente p) {
-		// TODO Auto-generated method stub
+
+		if(p== null) return null;
+		
 		PazienteDTO pDTO= new PazienteDTO();
 		//System.out.println("[Mapper_toDTO]ID Paziente:" + p.getId_paziente());
 		pDTO.setId_paziente(p.getId_paziente());

@@ -58,12 +58,12 @@ public class PazienteService{
 	}
 	
 	
-	public PazienteDTO inserisci(PazienteDTO pDTO) {
+	public PazienteDTO inserisci(PazienteDTO pDTO){
 		
 		LOGGER.info( "[Service_Inserisci]ID Paziente: "+ pazienteMapper.toEntity(pDTO).getId_paziente() );
 		
-		if(pDTO == null) throw new IllegalArgumentException();
 		//trasforma dto in entity e salva
+		pDTO.setId_paziente(0); //lo setto qui o nel controller?
 		return pazienteMapper.toDto( pDao.save(pazienteMapper.toEntity(pDTO)) );
 		
 	}
