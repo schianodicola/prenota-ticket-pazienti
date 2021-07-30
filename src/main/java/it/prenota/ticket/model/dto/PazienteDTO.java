@@ -2,8 +2,6 @@ package it.prenota.ticket.model.dto;
 
 import java.time.LocalDateTime;
 
-import javax.persistence.Column;
-
 public class PazienteDTO {
 	
 	private int id_paziente;

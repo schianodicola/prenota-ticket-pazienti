@@ -3,9 +3,7 @@ package it.prenota.ticket.controller;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,19 +11,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import it.prenota.ticket.model.dto.EsitoDTO;
 import it.prenota.ticket.model.dto.PazienteDTO;
-import it.prenota.ticket.model.entity.Paziente;
-import it.prenota.ticket.model.mapper.PazienteMapper;
 import it.prenota.ticket.model.response.PazienteResponse;
 import it.prenota.ticket.model.util.EsitoUtility;
-import it.prenota.ticket.model.util.ListUtility;
 import it.prenota.ticket.model.util.StringUtility;
 import it.prenota.ticket.service.PazienteService;
 import javassist.bytecode.stackmap.TypeData.ClassName;
@@ -43,6 +35,8 @@ public class PazienteController {
 	
 	/*
 	 * Restituisco tutti i Pazienti presenti nel DataBase.
+	 * Status code restituiti:
+	 * - 200: se la chiamata è andata a buon fine
 	 */
 	@RequestMapping(path = "/get", method = RequestMethod.GET)
 	public ResponseEntity<?> getPazienti() {
@@ -67,6 +61,9 @@ public class PazienteController {
 	
 	/*
 	 * Inserisco un Paziente all'interno del DataBase.
+	 * Status code restituiti:
+	 * - 200: se la chiamata è andata a buon fine
+	 * - 400: se i campi obbligatori non sono valorizzati
 	 */
 	@RequestMapping(path = "/inserisci", method = RequestMethod.POST)
 	public ResponseEntity<?> inserire( @RequestBody final PazienteDTO paziente ) {
@@ -86,6 +83,7 @@ public class PazienteController {
 			return new ResponseEntity<>(pr, HttpStatus.OK); 
 		}
 		
+		//Inserisco il Paziente
 		try {
 			sPaziente.inserisci(paziente);
 			List<PazienteDTO> lista= new ArrayList<>();
@@ -93,7 +91,8 @@ public class PazienteController {
 			pr.setPazientiDTO(lista);
 			
 		}catch(Exception e) {
-			LOGGER.info( "[Errore in method(Inserire)] Impossibile inserire il paziente" );
+			LOGGER.info( "[Errore in method(Inserire)] Impossibile inserire il paziente "+ e.getMessage() ); //TODO logger con error, stampa E
+			
 			pr.setEsitoDTO(EsitoUtility.setEsitoKoServer());
 			return new ResponseEntity<>(pr, HttpStatus.OK); 
 		}
@@ -105,6 +104,9 @@ public class PazienteController {
 	
 	/*
 	 * Aggiorno un Paziente presente nel DataBase.
+	 * Status code restituiti:
+	 * - 200: se la chiamata è andata a buon fine
+	 * - 400: se i campi obbligatori non sono valorizzati
 	 */
 	@RequestMapping(path = "/aggiorna", method = RequestMethod.PUT)
 	public ResponseEntity<?> aggiornare( @RequestBody final PazienteDTO paziente ) {
@@ -143,6 +145,9 @@ public class PazienteController {
 	
 	/*
 	 * Elimino un Paziente presente nel DataBase.
+	 * Status code restituiti:
+	 * - 200: se la chiamata è andata a buon fine
+	 * - 400: se i campi obbligatori non sono valorizzati
 	 */
 	@RequestMapping(path = "/elimina/{cf}", method = RequestMethod.DELETE)
 	public ResponseEntity<?> eliminare( @PathVariable String cf ) {
@@ -151,12 +156,12 @@ public class PazienteController {
 		pr.setEsitoDTO(EsitoUtility.setEsitoOk());
 		
 		//Controllo che i campi non siano Nulli
-		if(cf==null || StringUtility.isEmpty(cf) ) {
+		if(StringUtility.isEmpty(cf) ) {
 			pr.setEsitoDTO(EsitoUtility.setEsitoKo());
 			return new ResponseEntity<>(pr, HttpStatus.BAD_REQUEST);
 		}
 		
-		//Controllo se il paziente è presente nel DB
+		//Controllo se il Paziente è presente nel DB
 		PazienteDTO p= sPaziente.findByCf(cf); 
 		if(p == null) {
 			pr.setEsitoDTO(EsitoUtility.setEsitoGenerico("KO", "Il Paziente che si vuole eliminare non è presente del DB"));
