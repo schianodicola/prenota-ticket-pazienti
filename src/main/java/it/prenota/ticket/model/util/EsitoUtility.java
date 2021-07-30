@@ -8,14 +8,15 @@ public class EsitoUtility {
 		return new EsitoDTO("OK", "Chiamata eseguita correttamente");
 	}
 	
-	public static EsitoDTO setEsitoOkButError() {
+	public static EsitoDTO setEsitoKoServer() {
 		return new EsitoDTO("KO", "Sistema non disponibile, riprovare più tardi ");
 	}
 	
-	public static EsitoDTO setEsitoBad() {
+	public static EsitoDTO setEsitoKo() {
 		return new EsitoDTO("KO", "Campi obbligatori non valorizzati");
 	}
 	
-	//aggiungere metodo generale
-	
+	public static EsitoDTO setEsitoGenerico(String code, String description) {
+		return new EsitoDTO(code, description);
+	}
 }

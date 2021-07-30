@@ -16,9 +16,9 @@ public class PazienteMapperImpl implements PazienteMapper{
 	
 	@Override
 	public Paziente toEntity(PazienteDTO pDTO) {
-		// TODO Auto-generated method stub
+		
 		if(pDTO== null) return null;
-		//System.out.println("[MapperImpl_toEntity]ID Paziente:" + pDTO.getId_paziente());
+		
 		LOGGER.info( "[MapperImpl_toEntity]ID Paziente:" + pDTO.getId_paziente() );
 		
 		Paziente p= new Paziente();
@@ -37,8 +37,9 @@ public class PazienteMapperImpl implements PazienteMapper{
 
 		if(p== null) return null;
 		
+		LOGGER.info( "[MapperImpl_toEntity]ID Paziente:" + p.getId_paziente() );
+		
 		PazienteDTO pDTO= new PazienteDTO();
-		//System.out.println("[Mapper_toDTO]ID Paziente:" + p.getId_paziente());
 		pDTO.setId_paziente(p.getId_paziente());
 		pDTO.setCf(p.getCf());
 		pDTO.setCognome(p.getCognome());

@@ -41,18 +41,22 @@ public class PazienteController {
 	private PazienteService sPaziente;
 	
 	
+	/*
+	 * Restituisco tutti i Pazienti presenti nel DataBase.
+	 */
 	@RequestMapping(path = "/get", method = RequestMethod.GET)
 	public ResponseEntity<?> getPazienti() {
-		Set<PazienteDTO> lpazienti= new HashSet<>();
 		
-		lpazienti= sPaziente.getAll();
 		PazienteResponse pr= new PazienteResponse(); 
 		pr.setEsitoDTO(EsitoUtility.setEsitoOk());
+		
+		//Pesco i Pazienti dal DB
+		Set<PazienteDTO> lpazienti= new HashSet<>();
+		lpazienti= sPaziente.getAll();
+		
 		if(lpazienti.isEmpty()) { 
 			return new ResponseEntity<>(pr, HttpStatus.OK);
 		}else {
-			
-			//List<PazienteDTO> lista= new ArrayList<>(lpazienti); //TODO prova a togliere i warning
 			List<PazienteDTO> lista= List.copyOf(lpazienti);
 			pr.setPazientiDTO(lista);
 			return new ResponseEntity<>(pr, HttpStatus.OK);
@@ -60,67 +64,74 @@ public class PazienteController {
 	
 	}
 	
+	
+	/*
+	 * Inserisco un Paziente all'interno del DataBase.
+	 */
 	@RequestMapping(path = "/inserisci", method = RequestMethod.POST)
 	public ResponseEntity<?> inserire( @RequestBody final PazienteDTO paziente ) {
 		
 		PazienteResponse pr= new PazienteResponse(); 
 		pr.setEsitoDTO(EsitoUtility.setEsitoOk());
 		
-		//class string utility
+		//Controllo che i campi non siano Nulli
 		if(paziente==null || StringUtility.isEmpty(paziente.getCf()) ) {
-			pr.setEsitoDTO(EsitoUtility.setEsitoBad());
+			pr.setEsitoDTO(EsitoUtility.setEsitoKo());
 			return new ResponseEntity<>(pr, HttpStatus.BAD_REQUEST);
 		}
-		//if(paziente==null || paziente.getCf()==null || paziente.getCf().equals("") ) return new ResponseEntity<>("non hai inserito i dati del paziente", HttpStatus.BAD_REQUEST);
 		
-		//Controllo se il CF e' già presente, per vedere se salvarlo o meno
+		//Controllo se il Paziente e' già presente nel DB
 		if(sPaziente.findByCf( paziente.getCf() ) != null) {
-			return new ResponseEntity<>("Paziente gia' esistente", HttpStatus.OK); //TODO ricontrollare
+			pr.setEsitoDTO(EsitoUtility.setEsitoGenerico("OK", "Paziente gia' esistente"));
+			return new ResponseEntity<>(pr, HttpStatus.OK); 
 		}
 		
-		
-		//TODO da rivedere
 		try {
 			sPaziente.inserisci(paziente);
 			List<PazienteDTO> lista= new ArrayList<>();
 			lista.add(paziente);
 			pr.setPazientiDTO(lista);
+			
 		}catch(Exception e) {
-			System.err.println("[Errore] Impossibile inserire il paziente (paziente null)");
-			pr.setEsitoDTO(EsitoUtility.setEsitoOkButError());
+			LOGGER.info( "[Errore in method(Inserire)] Impossibile inserire il paziente" );
+			pr.setEsitoDTO(EsitoUtility.setEsitoKoServer());
 			return new ResponseEntity<>(pr, HttpStatus.OK); 
 		}
 		
 		return new ResponseEntity<>(pr, HttpStatus.OK);
 		
-		
 	}
 	
 	
+	/*
+	 * Aggiorno un Paziente presente nel DataBase.
+	 */
 	@RequestMapping(path = "/aggiorna", method = RequestMethod.PUT)
 	public ResponseEntity<?> aggiornare( @RequestBody final PazienteDTO paziente ) {
 		
 		PazienteResponse pr= new PazienteResponse();
+		pr.setEsitoDTO(EsitoUtility.setEsitoOk());
+		
+		//Controllo che i campi non siano Nulli
 		if(paziente==null || StringUtility.isEmpty(paziente.getCf()) ) {
-			pr.setEsitoDTO(EsitoUtility.setEsitoBad());
-			pr.setPazientiDTO(ListUtility.PazienteToList(paziente)); //nella casistica di errore , non c'è bisogno
+			pr.setEsitoDTO(EsitoUtility.setEsitoKo());
 			return new ResponseEntity<>(pr , HttpStatus.BAD_REQUEST);
 		}
-		PazienteDTO p=sPaziente.findByCf(paziente.getCf());
 		
+		//Controllo se il Paziente è presente nel DB
+		PazienteDTO p=sPaziente.findByCf(paziente.getCf());
 		if(p == null) {
-			return new ResponseEntity<>("Il Paziente che vuoi modificare non presente nel db", HttpStatus.OK);
+			pr.setEsitoDTO(EsitoUtility.setEsitoGenerico("KO", "Il Paziente che si vuole modificare non è presente del DB"));
+			return new ResponseEntity<>(pr, HttpStatus.OK);
 		}
 		
-		
-		pr.setEsitoDTO(EsitoUtility.setEsitoOk());
-		//aggiorno Paziente
+		//Aggiorno il Paziente
 		paziente.setId_paziente(p.getId_paziente());
 		if(sPaziente.aggiorna(paziente) == null) {
-			return new ResponseEntity<>("errore modifica", HttpStatus.NOT_FOUND);
+			pr.setEsitoDTO(EsitoUtility.setEsitoKoServer());
+			return new ResponseEntity<>(pr, HttpStatus.OK);
 		}
 		else {
-			//pr.getPazientiDTO().add(p); 
 			List<PazienteDTO> lista= new ArrayList<>();
 			lista.add(paziente);
 			pr.setPazientiDTO(lista);
@@ -129,33 +140,38 @@ public class PazienteController {
 		
 	}
 	
-	//cancella l'articolo tramite CF
+	
+	/*
+	 * Elimino un Paziente presente nel DataBase.
+	 */
 	@RequestMapping(path = "/elimina/{cf}", method = RequestMethod.DELETE)
 	public ResponseEntity<?> eliminare( @PathVariable String cf ) {
 			
 		PazienteResponse pr= new PazienteResponse(); 
+		pr.setEsitoDTO(EsitoUtility.setEsitoOk());
 		
+		//Controllo che i campi non siano Nulli
 		if(cf==null || StringUtility.isEmpty(cf) ) {
-			pr.setEsitoDTO(EsitoUtility.setEsitoBad());
+			pr.setEsitoDTO(EsitoUtility.setEsitoKo());
 			return new ResponseEntity<>(pr, HttpStatus.BAD_REQUEST);
 		}
-		//controllo se il paziente è presente
-		PazienteDTO p= sPaziente.findByCf(cf); //Sei sicuro che restituisca null se non è presente un paziente?
+		
+		//Controllo se il paziente è presente nel DB
+		PazienteDTO p= sPaziente.findByCf(cf); 
 		if(p == null) {
-			return new ResponseEntity<>("paziente non presente", HttpStatus.OK); 
+			pr.setEsitoDTO(EsitoUtility.setEsitoGenerico("KO", "Il Paziente che si vuole eliminare non è presente del DB"));
+			return new ResponseEntity<>(pr, HttpStatus.OK); 
 		}
-					
-			
-		pr.setEsitoDTO(EsitoUtility.setEsitoOk());
+		
+		//Elimino il Paziente
 		if(sPaziente.elimina(cf) == true) {
-			//pr.getPazientiDTO().add(p); // solo in caso di esito negativo, o anche positivo?
 			List<PazienteDTO> lista= new ArrayList<>();
 			lista.add(p);
 			pr.setPazientiDTO(lista);
 			return new ResponseEntity<>(pr, HttpStatus.OK);
 		}else {
-			//pr.setEsitoDTO(EsitoUtility.setEsitoOkButError()); Corretto, ma è un uso improprio dell'utility?
-			return new ResponseEntity<>(pr , HttpStatus.NOT_FOUND);//cambia
+			pr.setEsitoDTO(EsitoUtility.setEsitoKoServer());
+			return new ResponseEntity<>(pr , HttpStatus.OK);
 		}
 				
 	}
