@@ -14,7 +14,7 @@ public class ListUtility {
 	        
 	    return list;
 	}
-	//TODO da testare.
+	//da testare.
 	public static List<?> SetToList(Set<?> obj ) {
 		
 		return List.copyOf(obj);

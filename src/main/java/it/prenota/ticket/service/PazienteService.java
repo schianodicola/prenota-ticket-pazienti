@@ -74,7 +74,7 @@ public class PazienteService{
 		Paziente p= pDao.findById(pDTO.getId_paziente());
 	
 		p= pazienteMapper.toEntity(pDTO);
-		return pazienteMapper.toDto( pDao.save(p));
+		return pazienteMapper.toDto( pDao.save(p) );
 				
 	}
 	

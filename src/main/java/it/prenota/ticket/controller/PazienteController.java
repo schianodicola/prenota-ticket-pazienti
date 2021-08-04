@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,6 +61,40 @@ public class PazienteController {
 	
 	
 	/*
+	 * Ricerco un Paziente all'interno del DataBase.
+	 * Status code restituiti:
+	 * - 200: se la chiamata è andata a buon fine
+	 * - 400: se i campi obbligatori non sono valorizzati
+	 */
+	@RequestMapping(path = "/ricerca/{cf}", method = RequestMethod.GET)
+	public ResponseEntity<?> ricercare(@PathVariable String cf) {
+		
+		PazienteResponse pr= new PazienteResponse(); 
+		pr.setEsitoDTO(EsitoUtility.setEsitoOk());
+		
+		//Controllo che i campi non siano Nulli
+		if(StringUtility.isEmpty(cf) ) {
+			pr.setEsitoDTO(EsitoUtility.setEsitoKo());
+			return new ResponseEntity<>(pr, HttpStatus.BAD_REQUEST);
+		}
+		
+		//Pesco il Paziente dal DB
+		PazienteDTO paziente= sPaziente.findByCf(cf);
+		
+		if(paziente == null) { 
+			pr.setEsitoDTO(EsitoUtility.setEsitoGenerico("KO", "Codice fiscale inesistente"));
+			return new ResponseEntity<>(pr, HttpStatus.OK);
+		}else {
+			List<PazienteDTO> lista= new ArrayList<>();
+			lista.add(paziente);
+			pr.setPazientiDTO(lista);
+			return new ResponseEntity<>(pr, HttpStatus.OK);
+		}
+	
+	}
+	
+	
+	/*
 	 * Inserisco un Paziente all'interno del DataBase.
 	 * Status code restituiti:
 	 * - 200: se la chiamata è andata a buon fine
@@ -91,7 +126,7 @@ public class PazienteController {
 			pr.setPazientiDTO(lista);
 			
 		}catch(Exception e) {
-			LOGGER.info( "[Errore in method(Inserire)] Impossibile inserire il paziente "+ e.getMessage() ); //TODO logger con error, stampa E
+			LOGGER.info( "[Error in method 'Inserire'] Impossibile inserire il paziente "+ e.getMessage() ); 
 			
 			pr.setEsitoDTO(EsitoUtility.setEsitoKoServer());
 			return new ResponseEntity<>(pr, HttpStatus.OK); 
@@ -123,7 +158,7 @@ public class PazienteController {
 		//Controllo se il Paziente è presente nel DB
 		PazienteDTO p=sPaziente.findByCf(paziente.getCf());
 		if(p == null) {
-			pr.setEsitoDTO(EsitoUtility.setEsitoGenerico("KO", "Il Paziente che si vuole modificare non è presente del DB"));
+			pr.setEsitoDTO(EsitoUtility.setEsitoGenerico("KO", "Il Paziente che si vuole modificare non è presente nel DB"));
 			return new ResponseEntity<>(pr, HttpStatus.OK);
 		}
 		

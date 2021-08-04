@@ -9,6 +9,7 @@ public class PazienteResponse {
 	private EsitoDTO esitoDTO;
 	private List<PazienteDTO> pazientiDTO;
 	
+	
 	public PazienteResponse() {
 		super();
 	}
@@ -34,7 +35,6 @@ public class PazienteResponse {
 	public void setPazientiDTO(List<PazienteDTO> pazientiDTO) {
 		this.pazientiDTO = pazientiDTO;
 	}
-	
 	
 	
 }

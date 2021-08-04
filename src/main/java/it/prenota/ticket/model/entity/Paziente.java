@@ -1,13 +1,17 @@
 package it.prenota.ticket.model.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 
 @Entity
@@ -42,6 +46,11 @@ public class Paziente {
 	@Column(name="cf", length= 16, nullable=false)
 	private String cf;
 
+	@JsonIgnore
+	@OneToMany(mappedBy = "paziente")
+	private List<Prenotazione> prenotazioni;
+	
+	
 	public int getId_paziente() {
 		return id_paziente;
 	}
@@ -88,6 +97,14 @@ public class Paziente {
 
 	public void setCf(String cf) {
 		this.cf = cf;
+	}
+
+	public List<Prenotazione> getPrenotazioni() {
+		return prenotazioni;
+	}
+
+	public void setPrenotazioni(List<Prenotazione> prenotazioni) {
+		this.prenotazioni = prenotazioni;
 	}
 	
 	
