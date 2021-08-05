@@ -14,13 +14,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import it.prenota.ticket.model.dto.PazienteDTO;
 import it.prenota.ticket.model.dto.VisitaDTO;
-import it.prenota.ticket.model.response.PazienteResponse;
 import it.prenota.ticket.model.response.VisitaResponse;
 import it.prenota.ticket.model.util.EsitoUtility;
-import it.prenota.ticket.model.util.StringUtility;
-import it.prenota.ticket.service.PazienteService;
 import it.prenota.ticket.service.VisitaService;
 import javassist.bytecode.stackmap.TypeData.ClassName;
 
@@ -85,24 +81,50 @@ public class VisitaController {
 	
 	}
 	
+	
+	/*
+	 * Ricerco una Visita all'interno del DataBase.
+	 * Status code restituiti:
+	 * - 200: se la chiamata è andata a buon fine
+	 */
+	@RequestMapping(path = "/ricerca/{nome}", method = RequestMethod.GET)
+	public ResponseEntity<?> ricercareNome(@PathVariable String nome) {
+		
+		VisitaResponse pr= new VisitaResponse(); 
+		pr.setEsitoDTO(EsitoUtility.setEsitoOk());
+		
+		//Pesco il Paziente dal DB
+		VisitaDTO visita= visitaService.ricercaNome(nome);
+		
+		if(visita == null) { 
+			pr.setEsitoDTO(EsitoUtility.setEsitoGenerico("KO", "Visita non trovata"));
+			return new ResponseEntity<>(pr, HttpStatus.OK);
+		}else {
+			List<VisitaDTO> lista= new ArrayList<>();
+			lista.add(visita);
+			pr.setVisitaDTO(lista);
+			return new ResponseEntity<>(pr, HttpStatus.OK);
+		}
+	
+	}
+	
+	
+	/*
+	 * Inserisco la Visita all'interno del DataBase.
+	 * Status code restituiti:
+	 * - 200: se la chiamata è andata a buon fine
+	 */
 	@RequestMapping(path = "/inserisci", method = RequestMethod.POST)
 	public ResponseEntity<?> inserire( @RequestBody final VisitaDTO visita ) {
 		
 		VisitaResponse pr= new VisitaResponse(); 
 		pr.setEsitoDTO(EsitoUtility.setEsitoOk());
 		
-		
-		//Controllo se la Visita e' già presente nel DB
-		if(visitaService.ricerca(visita.getId()) != null) {
-			pr.setEsitoDTO(EsitoUtility.setEsitoGenerico("OK", "Visita gia' esistente"));
-			return new ResponseEntity<>(pr, HttpStatus.OK); 
-		}
-		
 		//Inserisco la Visita
 		try {
-			visitaService.inserisci(visita);
+			VisitaDTO visitaOut= visitaService.inserisci(visita);
 			List<VisitaDTO> lista= new ArrayList<>();
-			lista.add(visita);
+			lista.add(visitaOut);
 			pr.setVisitaDTO(lista);
 			
 		}catch(Exception e) {
@@ -117,19 +139,26 @@ public class VisitaController {
 	}
 	
 	
+	/*
+	 * Aggiorno la Visita presente nel DataBase.
+	 * Status code restituiti:
+	 * - 200: se la chiamata è andata a buon fine
+	 */
 	@RequestMapping(path = "/aggiorna", method = RequestMethod.PUT)
 	public ResponseEntity<?> aggiornare( @RequestBody final VisitaDTO visita ) {
 		
 		VisitaResponse pr= new VisitaResponse(); 
 		pr.setEsitoDTO(EsitoUtility.setEsitoOk());
 		
-		if(visitaService.aggiorna(visita) == null) {
+		//Aggiorno la Visita
+		VisitaDTO visitaOut= visitaService.aggiorna(visita);
+		if(visitaOut == null) {
 			pr.setEsitoDTO(EsitoUtility.setEsitoKoServer());
 			return new ResponseEntity<>(pr, HttpStatus.OK);
 		}
 		else {
 			List<VisitaDTO> lista= new ArrayList<>();
-			lista.add(visita);
+			lista.add(visitaOut);
 			pr.setVisitaDTO(lista);
 			return new ResponseEntity<>(pr, HttpStatus.OK);
 		}
@@ -137,6 +166,11 @@ public class VisitaController {
 	}
 	
 	
+	/*
+	 * Elimino una Visita presente nel DataBase.
+	 * Status code restituiti:
+	 * - 200: se la chiamata è andata a buon fine
+	 */
 	@RequestMapping(path = "/elimina/{id}", method = RequestMethod.DELETE)
 	public ResponseEntity<?> eliminare( @PathVariable int id ) {
 		
@@ -151,11 +185,11 @@ public class VisitaController {
 			return new ResponseEntity<>(pr, HttpStatus.OK); 
 		}
 		
-		
 		//Elimino la Visita
-		if(visitaService.elimina(id) == true) {
+		VisitaDTO visitaOut= visitaService.elimina(v);
+		if(visitaOut != null) {
 			List<VisitaDTO> lista= new ArrayList<>();
-			lista.add(v);
+			lista.add(visitaOut);
 			pr.setVisitaDTO(lista);
 			return new ResponseEntity<>(pr, HttpStatus.OK);
 		}else {

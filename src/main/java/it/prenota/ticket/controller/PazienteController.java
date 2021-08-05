@@ -107,7 +107,7 @@ public class PazienteController {
 		pr.setEsitoDTO(EsitoUtility.setEsitoOk());
 		
 		//Controllo che i campi non siano Nulli
-		if(paziente==null || StringUtility.isEmpty(paziente.getCf()) ) {
+		if(StringUtility.isEmpty(paziente.getCf()) ) {
 			pr.setEsitoDTO(EsitoUtility.setEsitoKo());
 			return new ResponseEntity<>(pr, HttpStatus.BAD_REQUEST);
 		}
@@ -120,9 +120,9 @@ public class PazienteController {
 		
 		//Inserisco il Paziente
 		try {
-			sPaziente.inserisci(paziente);
+			PazienteDTO pazienteOut= sPaziente.inserisci(paziente);
 			List<PazienteDTO> lista= new ArrayList<>();
-			lista.add(paziente);
+			lista.add(pazienteOut);
 			pr.setPazientiDTO(lista);
 			
 		}catch(Exception e) {
@@ -150,7 +150,7 @@ public class PazienteController {
 		pr.setEsitoDTO(EsitoUtility.setEsitoOk());
 		
 		//Controllo che i campi non siano Nulli
-		if(paziente==null || StringUtility.isEmpty(paziente.getCf()) ) {
+		if(StringUtility.isEmpty(paziente.getCf()) ) {
 			pr.setEsitoDTO(EsitoUtility.setEsitoKo());
 			return new ResponseEntity<>(pr , HttpStatus.BAD_REQUEST);
 		}
@@ -163,14 +163,14 @@ public class PazienteController {
 		}
 		
 		//Aggiorno il Paziente
-		paziente.setId_paziente(p.getId_paziente());
-		if(sPaziente.aggiorna(paziente) == null) {
+		PazienteDTO pazienteOut= sPaziente.aggiorna(paziente);
+		if(pazienteOut == null) {
 			pr.setEsitoDTO(EsitoUtility.setEsitoKoServer());
 			return new ResponseEntity<>(pr, HttpStatus.OK);
 		}
 		else {
 			List<PazienteDTO> lista= new ArrayList<>();
-			lista.add(paziente);
+			lista.add(pazienteOut);
 			pr.setPazientiDTO(lista);
 			return new ResponseEntity<>(pr, HttpStatus.OK);
 		}

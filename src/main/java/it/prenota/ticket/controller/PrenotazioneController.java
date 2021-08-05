@@ -14,9 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import it.prenota.ticket.model.dto.PazienteDTO;
 import it.prenota.ticket.model.dto.PrenotazioneDTO;
-import it.prenota.ticket.model.response.PazienteResponse;
 import it.prenota.ticket.model.response.PrenotazioneResponse;
 import it.prenota.ticket.model.util.EsitoUtility;
 import it.prenota.ticket.model.util.StringUtility;
@@ -77,14 +75,14 @@ public class PrenotazioneController {
 		}
 		
 		//Pesco la Prenotazione dal DB
-		PrenotazioneDTO prenotazione= prenotazioneService.ricerca(codice);
+		PrenotazioneDTO prenotazioneOut= prenotazioneService.ricerca(codice);
 		
-		if(prenotazione == null) { 
+		if(prenotazioneOut == null) { 
 			pr.setEsitoDTO(EsitoUtility.setEsitoGenerico("KO", "Codice prenotazione inesistente"));
 			return new ResponseEntity<>(pr, HttpStatus.OK);
 		}else {
 			List<PrenotazioneDTO> lista= new ArrayList<>();
-			lista.add(prenotazione);
+			lista.add(prenotazioneOut);
 			pr.setPrenotazioniDTO(lista);
 			return new ResponseEntity<>(pr, HttpStatus.OK);
 		}
@@ -92,6 +90,12 @@ public class PrenotazioneController {
 	}
 	
 	
+	/*
+	 * Inserisco una Prenotazione all'interno del DataBase.
+	 * Status code restituiti:
+	 * - 200: se la chiamata è andata a buon fine
+	 * - 400: se i campi obbligatori non sono valorizzati
+	 */
 	@RequestMapping(path = "/inserisci", method = RequestMethod.POST)
 	public ResponseEntity<?> inserire( @RequestBody final PrenotazioneDTO prenotazione ) {
 		
@@ -99,11 +103,12 @@ public class PrenotazioneController {
 		pr.setEsitoDTO(EsitoUtility.setEsitoOk());
 		
 		//Controllo che i campi non siano Nulli
-		if(prenotazione==null || StringUtility.isEmpty(prenotazione.getCodice()) ) {
+		if(StringUtility.isEmpty(prenotazione.getCodice()) ) {
 			pr.setEsitoDTO(EsitoUtility.setEsitoKo());
 			return new ResponseEntity<>(pr, HttpStatus.BAD_REQUEST);
 		}
 		
+		//TODO chi è che sceglie il codice? lascio il controllo?
 		//Controllo se la Prenotazione e' già presente nel DB
 		if(prenotazioneService.ricerca(prenotazione.getCodice()) != null) {
 			pr.setEsitoDTO(EsitoUtility.setEsitoGenerico("OK", "Prenotazione gia' esistente"));
@@ -112,9 +117,9 @@ public class PrenotazioneController {
 		
 		//Inserisco la Prenotazione
 		try {
-			prenotazioneService.inserisci(prenotazione);
+			PrenotazioneDTO prenotazioneOut= prenotazioneService.inserisci(prenotazione);
 			List<PrenotazioneDTO> lista= new ArrayList<>();
-			lista.add(prenotazione);
+			lista.add(prenotazioneOut);
 			pr.setPrenotazioniDTO(lista);
 			
 		}catch(Exception e) {
@@ -129,6 +134,12 @@ public class PrenotazioneController {
 	}
 	
 	
+	/*
+	 * Aggiorno una Prenotazione presente nel DataBase.
+	 * Status code restituiti:
+	 * - 200: se la chiamata è andata a buon fine
+	 * - 400: se i campi obbligatori non sono valorizzati
+	 */
 	@RequestMapping(path = "/aggiorna", method = RequestMethod.PUT)
 	public ResponseEntity<?> aggiornare( @RequestBody final PrenotazioneDTO prenotazione ) {
 		
@@ -136,7 +147,7 @@ public class PrenotazioneController {
 		pr.setEsitoDTO(EsitoUtility.setEsitoOk());
 		
 		//Controllo che i campi non siano Nulli
-		if(prenotazione==null || StringUtility.isEmpty(prenotazione.getCodice() ) ) {
+		if(StringUtility.isEmpty(prenotazione.getCodice() ) ) {
 			pr.setEsitoDTO(EsitoUtility.setEsitoKo());
 			return new ResponseEntity<>(pr , HttpStatus.BAD_REQUEST);
 		}
@@ -149,14 +160,14 @@ public class PrenotazioneController {
 		}
 		
 		//Aggiorno la Prenotazione
-		prenotazione.setId(p.getId());
-		if(prenotazioneService.aggiorna(prenotazione) == null) {
+		PrenotazioneDTO prenotazioneOut= prenotazioneService.aggiorna(prenotazione);
+		if(prenotazioneOut == null) {
 			pr.setEsitoDTO(EsitoUtility.setEsitoKoServer());
 			return new ResponseEntity<>(pr, HttpStatus.OK);
 		}
 		else {
 			List<PrenotazioneDTO> lista= new ArrayList<>();
-			lista.add(prenotazione);
+			lista.add(prenotazioneOut);
 			pr.setPrenotazioniDTO(lista);
 			return new ResponseEntity<>(pr, HttpStatus.OK);
 		}
@@ -164,6 +175,12 @@ public class PrenotazioneController {
 	}
 	
 	
+	/*
+	 * Elimino una Prenotazione presente nel DataBase.
+	 * Status code restituiti:
+	 * - 200: se la chiamata è andata a buon fine
+	 * - 400: se i campi obbligatori non sono valorizzati
+	 */
 	@RequestMapping(path = "/elimina/{codice}", method = RequestMethod.DELETE)
 	public ResponseEntity<?> eliminare( @PathVariable String codice ) {
 		PrenotazioneResponse pr= new PrenotazioneResponse();
@@ -183,9 +200,10 @@ public class PrenotazioneController {
 		} 
 		
 		//Elimino la Prenotazione
-		if(prenotazioneService.elimina(codice) == true) {
+		PrenotazioneDTO prenotazioneOut= prenotazioneService.elimina(p);
+		if(prenotazioneOut != null) {
 			List<PrenotazioneDTO> lista= new ArrayList<>();
-			lista.add(p);
+			lista.add(prenotazioneOut);
 			pr.setPrenotazioniDTO(lista);
 			return new ResponseEntity<>(pr, HttpStatus.OK);
 		}else {

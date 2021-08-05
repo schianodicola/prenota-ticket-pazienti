@@ -1,5 +1,6 @@
 package it.prenota.ticket.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,9 +74,12 @@ private static final Logger LOGGER = LogManager.getLogger(ClassName.class.getNam
 	}
 	
 	//Elimina Prenotazione
-	public boolean elimina(String codice) {
+	public PrenotazioneDTO elimina(PrenotazioneDTO pDTO) {
 		
-		return pDao.deleteByCodice(codice)>0;
+		pDTO.setStato(false);
+		pDTO.setData_cancellazione(LocalDateTime.now());
+		
+		return aggiorna(pDTO);
 		
 	}
 	

@@ -11,6 +11,7 @@ import javassist.bytecode.stackmap.TypeData.ClassName;
 
 import org.apache.logging.log4j.Logger;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,10 +52,18 @@ public class VisitaService {
 		
 	}
 	
+	public VisitaDTO ricercaNome(String nome) {
+		
+		//restituisce la visita
+		return visitaMapper.toDto( vDao.findByNome(nome) );
+		
+	}
+	
 	
 	public VisitaDTO inserisci(VisitaDTO vDTO) {
 		
 		//trasforma dto in entity e salva
+		vDTO.setStato(true);
 		return visitaMapper.toDto( vDao.save( visitaMapper.toEntity(vDTO)) );
 		
 	}
@@ -71,9 +80,12 @@ public class VisitaService {
 	}
 	
 	
-	public boolean elimina(int id) {
+	public VisitaDTO elimina(VisitaDTO vDTO) { 
 		
-		return vDao.deleteById(id)>0;
+		vDTO.setStato(false);
+		vDTO.setData_cancellazione(LocalDateTime.now());
+		
+		return aggiorna(vDTO);
 		
 	}
 	

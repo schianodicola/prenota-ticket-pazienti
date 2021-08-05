@@ -16,11 +16,19 @@ public interface VisitaDAO extends CrudRepository<Visita, Integer>{
 
 	//get lista visite
 	@Query("SELECT v FROM Visita v")
+	List<Visita> findAllAlsoDisable();
+	
+	//get lista visite abilitate
+	@Query("SELECT v FROM Visita v WHERE v.stato IS TRUE")
 	List<Visita> findAll();
 	
 	//get Visita tramite id
-	@Query("SELECT v FROM Visita v WHERE v.id= :id")
+	@Query("SELECT v FROM Visita v WHERE v.id= :id AND v.stato IS TRUE")
 	Visita findById(@Param("id")int id);
+	
+	//get Visita tramite nome
+	@Query("SELECT v FROM Visita v WHERE v.nome= :nome AND v.stato IS TRUE")
+	Visita findByNome(@Param("nome")String Nome);
 	
 	//elimina visita tramite id
 	@Transactional

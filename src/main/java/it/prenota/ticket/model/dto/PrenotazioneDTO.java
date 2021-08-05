@@ -2,8 +2,6 @@ package it.prenota.ticket.model.dto;
 
 import java.time.LocalDateTime;
 
-import it.prenota.ticket.model.entity.Paziente;
-import it.prenota.ticket.model.entity.Visita;
 
 public class PrenotazioneDTO {
 
@@ -13,8 +11,8 @@ public class PrenotazioneDTO {
 	private boolean stato;
 	private LocalDateTime data_cancellazione;
 	
-	private Paziente paziente;
-	private Visita visita;
+	private PazienteDTO paziente;
+	private VisitaDTO visita;
 	
 	
 	public int getId() {
@@ -47,16 +45,16 @@ public class PrenotazioneDTO {
 	public void setData_cancellazione(LocalDateTime data_cancellazione) {
 		this.data_cancellazione = data_cancellazione;
 	}
-	public Paziente getPaziente() {
+	public PazienteDTO getPaziente() {
 		return paziente;
 	}
-	public void setPaziente(Paziente paziente) {
+	public void setPaziente(PazienteDTO paziente) {
 		this.paziente = paziente;
 	}
-	public Visita getVisita() {
+	public VisitaDTO getVisita() {
 		return visita;
 	}
-	public void setVisita(Visita visita) {
+	public void setVisita(VisitaDTO visita) {
 		this.visita = visita;
 	}
 	

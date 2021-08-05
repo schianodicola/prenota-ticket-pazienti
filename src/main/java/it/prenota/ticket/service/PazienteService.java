@@ -61,7 +61,6 @@ public class PazienteService{
 		LOGGER.info( "[Service_Inserisci]ID Paziente: "+ pazienteMapper.toEntity(pDTO).getId_paziente() );
 		
 		//trasforma dto in entity e salva
-		pDTO.setId_paziente(0); 
 		return pazienteMapper.toDto( pDao.save(pazienteMapper.toEntity(pDTO)) );
 		
 	}
