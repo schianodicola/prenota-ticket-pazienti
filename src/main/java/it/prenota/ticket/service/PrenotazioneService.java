@@ -57,7 +57,7 @@ private static final Logger LOGGER = LogManager.getLogger(ClassName.class.getNam
 		LOGGER.info( "[Service_Inserisci]ID Prenotazione: " + pDTO.getId());
 		
 		//trasforma dto in entity e salva
-		//pDTO.setId(0); // lo salvo qui o nel controller?
+		pDTO.setStato(true);
 		return prenotazioneMapper.toDto( pDao.save( prenotazioneMapper.toEntity(pDTO) ) );
 		
 	}
@@ -84,4 +84,39 @@ private static final Logger LOGGER = LogManager.getLogger(ClassName.class.getNam
 	}
 	
 	
+	public int contaPrenotazioniOld() {
+		
+		String nome= "Risonanza Magnetica";
+		return pDao.countNumPrenotazioniByVisitaAndByTempo(nome).getPrenotazioni().size();
+	}
+	
+	
+	//Coonta il numero di prenotazioni di una visita in un range di tempo
+	public int contaPrenotazioni(String nome, LocalDateTime t1, LocalDateTime t2) {
+		
+		return pDao.countNumPrenotazioniByVisitaAndByTempo(nome, t1, t2);
+	}
+	
+	
+	//Lista prenotazioni di un paziente
+	public List<PrenotazioneDTO> findPrenByPaziente(String cf){
+		
+		List<Prenotazione> listaPrenotazioni= pDao.findPrenByPaziente(cf);
+		List<PrenotazioneDTO> listaDTO= new ArrayList<>();
+		
+		if(!listaPrenotazioni.isEmpty()) {
+			for(Prenotazione p: listaPrenotazioni) {
+				listaDTO.add( prenotazioneMapper.toDto(p) );
+			}
+		}
+		
+		return listaDTO;
+		
+	}
+	
+	
+	
+	
 }
+
+

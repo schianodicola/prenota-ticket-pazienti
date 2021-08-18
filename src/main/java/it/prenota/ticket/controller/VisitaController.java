@@ -179,7 +179,7 @@ public class VisitaController {
 		
 		
 		//Controllo se il Paziente è presente nel DB
-		VisitaDTO v= visitaService.ricerca(id); //TODO: se più persone vogliono eliminare la stessa visita?
+		VisitaDTO v= visitaService.ricerca(id); 
 		if(v == null) {
 			pr.setEsitoDTO(EsitoUtility.setEsitoGenerico("KO", "La Visita che si vuole eliminare non è presente del DB"));
 			return new ResponseEntity<>(pr, HttpStatus.OK); 

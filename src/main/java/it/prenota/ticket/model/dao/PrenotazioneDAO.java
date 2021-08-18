@@ -7,13 +7,17 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import it.prenota.ticket.model.entity.Prenotazione;
+import it.prenota.ticket.model.entity.Visita;
 
 
 @Repository
 public interface PrenotazioneDAO extends CrudRepository<Prenotazione, Integer>{
+	
+	//CRUD
 	
 	//get lista Prenotazioni
 	@Query("SELECT p FROM Prenotazione p")
@@ -36,4 +40,20 @@ public interface PrenotazioneDAO extends CrudRepository<Prenotazione, Integer>{
 	@Modifying
 	@Query("DELETE FROM Prenotazione p WHERE p.codice= :cod")
 	int deleteByCodice(@Param("cod")String codice);
+	
+	//OPERAZIONI VARIE
+	
+	//FUNZIONANTE but not used
+	@Query("SELECT v FROM Visita v WHERE v.nome= :nome ")
+	Visita countNumPrenotazioniByVisitaAndByTempo(@Param("nome") String nome);
+	
+	//conta il numero di prenotazioni di una visita in un range di tempo
+	@Query("SELECT COUNT(p) FROM Prenotazione p JOIN p.visita v WHERE v.nome= :nome AND p.data_appuntamento>= :time1 AND  p.data_appuntamento<= :time2 AND p.stato IS TRUE AND v.stato IS TRUE ")
+	int countNumPrenotazioniByVisitaAndByTempo(@Param("nome") String nome, @Param("time1") LocalDateTime time1, @Param("time2") LocalDateTime time2);
+	
+	//lista prenotazioni di un paziente
+	@Query("SELECT p FROM Prenotazione p JOIN p.paziente pa WHERE pa.cf= :cf AND p.stato IS TRUE")
+	List<Prenotazione> findPrenByPaziente(@Param("cf") String cf);
+	
 }
+

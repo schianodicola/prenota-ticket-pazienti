@@ -1,6 +1,8 @@
 package it.prenota.ticket.service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import it.prenota.ticket.model.dao.PazienteDAO;
 import it.prenota.ticket.model.dto.PazienteDTO;
+import it.prenota.ticket.model.dto.VisitaDTO;
 import it.prenota.ticket.model.entity.Paziente;
 import it.prenota.ticket.model.mapper.PazienteMapper;
 import javassist.bytecode.stackmap.TypeData.ClassName;
@@ -81,6 +84,21 @@ public class PazienteService{
 	public boolean elimina(String cf) {
 		
 		return pDao.deleteByCf(cf)>0;
+		
+	}
+	
+	
+	public List<PazienteDTO> findByVisita(String nome){
+		
+		List<Paziente> listaPazienti= pDao.findByVisitaNome(nome);
+		List<PazienteDTO> listaDTO= new ArrayList<>();
+		
+		if(!listaPazienti.isEmpty()) {
+			for(Paziente p: listaPazienti) {
+				listaDTO.add( pazienteMapper.toDto(p) );
+			}
+		}
+		return listaDTO;
 		
 	}
 	

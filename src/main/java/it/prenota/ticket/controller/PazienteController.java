@@ -21,6 +21,7 @@ import it.prenota.ticket.model.response.PazienteResponse;
 import it.prenota.ticket.model.util.EsitoUtility;
 import it.prenota.ticket.model.util.StringUtility;
 import it.prenota.ticket.service.PazienteService;
+import it.prenota.ticket.service.PrenotazioneService;
 import javassist.bytecode.stackmap.TypeData.ClassName;
 
 
@@ -215,6 +216,34 @@ public class PazienteController {
 		}
 				
 	}
+	
+	
+	@RequestMapping(path = "/ricercaPazientiPrenotati/{nome}", method = RequestMethod.GET)
+	public ResponseEntity<?> ricercarePazientiByVisita(@PathVariable String nome) {
+		
+		PazienteResponse pr= new PazienteResponse(); 
+		pr.setEsitoDTO(EsitoUtility.setEsitoOk());
+		
+		//Controllo che i campi non siano Nulli
+		if(StringUtility.isEmpty(nome) ) {
+			pr.setEsitoDTO(EsitoUtility.setEsitoKo());
+			return new ResponseEntity<>(pr, HttpStatus.BAD_REQUEST);
+		}
+		
+		//Pesco i Pazienti dal DB
+		List<PazienteDTO> listaPazienti= sPaziente.findByVisita(nome);
+		
+		if(listaPazienti == null) { 
+			pr.setEsitoDTO(EsitoUtility.setEsitoGenerico("KO", "Non ci sono Pazienti prenotati alla Visita: " + nome));
+			return new ResponseEntity<>(pr, HttpStatus.OK);
+		}else {
+			pr.setPazientiDTO(listaPazienti);
+			return new ResponseEntity<>(pr, HttpStatus.OK);
+		}
+	
+	}
+	
+	
 	
 	
 	

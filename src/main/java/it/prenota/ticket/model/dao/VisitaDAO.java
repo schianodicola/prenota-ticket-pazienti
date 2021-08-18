@@ -14,6 +14,8 @@ import it.prenota.ticket.model.entity.Visita;
 @Repository
 public interface VisitaDAO extends CrudRepository<Visita, Integer>{
 
+	//CRUD
+	
 	//get lista visite
 	@Query("SELECT v FROM Visita v")
 	List<Visita> findAllAlsoDisable();
@@ -35,6 +37,10 @@ public interface VisitaDAO extends CrudRepository<Visita, Integer>{
 	@Modifying
 	@Query("DELETE FROM Visita v WHERE v.id= :id")
 	int deleteById(@Param("id")int id);
+	
+	//OPERAZIONI VARIE
+	
+	
 	
 	
 }

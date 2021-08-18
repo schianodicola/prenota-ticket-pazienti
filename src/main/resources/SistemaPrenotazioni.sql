@@ -37,3 +37,23 @@ CREATE TABLE IF NOT EXISTS PRENOTAZIONE(
 	CONSTRAINT prenotazione_fk2 FOREIGN KEY(id_visita) REFERENCES visita(id)
 );
 
+CONSTRAINT prenotazione_fk3 FOREIGN KEY(id_struttura) REFERENCES struttura(id);
+
+CREATE TABLE IF NOT EXISTS STRUTTURA(
+	id serial,
+	nome varchar(50),
+	asl varchar(50),
+	citta varchar(50),
+	provincia varchar(50),
+	cap int,
+	indirizzo varchar(50),
+	reparto varchar(50),
+	n_piani int,
+	capacita_max int,
+	stato boolean,
+	data_cancellazione timestamp,
+
+	PRIMARY KEY(id),
+);
+
+
